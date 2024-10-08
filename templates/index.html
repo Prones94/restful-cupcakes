@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Cupcake List{% endblock %}
+
+{% block content %}
+    <h2>Cupcake List</h2>
+    <ul>
+    {% for cupcake in cupcakes %}
+        <li>{{ cupcake.flavor }} ({{ cupcake.size }}) - Rating: {{ cupcake.rating }}
+            <a href="{{ url_for('update_cupcake_form', cupcake_id=cupcake.id) }}">Update</a>
+        </li>
+    {% endfor %}
+    </ul>
+
+    <br><br>
+    <a href="{{ url_for('new_cupcake_form') }}">Add a New Cupcake</a>
+{% endblock %}
