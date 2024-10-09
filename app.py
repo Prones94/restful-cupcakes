@@ -36,21 +36,23 @@ def new_cupcake_form():
 
 
 # Update an existing cupcake (using WTForms)
-@app.route('/cupcakes/update/<int:cupcake_id>', methods=['GET', 'POST'])
-def update_cupcake_form(cupcake_id):
+@app.route('/cupcakes/update', methods=['GET', 'POST'])
+def update_cupcake_form():
+    cupcake_id = request.args.get('id')
+    if not cupcake_id:
+        return "No cupcake ID provided", 400
+
     cupcake = Cupcake.query.get_or_404(cupcake_id)
-    form = CupcakeForm(obj=cupcake)  # Pre-fill the form with current cupcake data
+    form = CupcakeForm(obj=cupcake)
 
     if form.validate_on_submit():
-        # Update cupcake with form data
         cupcake.flavor = form.flavor.data
         cupcake.size = form.size.data
         cupcake.rating = form.rating.data
         cupcake.image = form.image.data or 'https://tinyurl.com/demo-cupcake'
 
         db.session.commit()
-        return redirect(url_for('index'))  # Redirect to the list of cupcakes after updating
-
+        return redirect(url_for('index'))
     return render_template('update_cupcake.html', form=form, cupcake=cupcake)
 
 

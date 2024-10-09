@@ -1,41 +1,22 @@
-// Ensure CupcakeAPI class is available in this file
+import { CupcakeAPI } from './api.js';
 
-class CupcakeAPI {
-  constructor(baseURL) {
-    this.baseURL = baseURL;
-  }
-
-  // Fetch all cupcakes
-  async fetchAllCupcakes() {
-    const response = await axios.get(`${this.baseURL}/cupcakes`);
-    return response.data.cupcakes;
-  }
-
-  // Update a specific cupcake
-  async updateCupcake(id, data) {
-    const response = await axios.patch(`${this.baseURL}/cupcakes/${id}`, data);
-    return response.data.cupcake;
-  }
-}
-
-// Initialize CupcakeAPI with the correct base URL
+// Initialize the CupcakeAPI instance
 const cupcakeAPI = new CupcakeAPI('/api');
 
-// JavaScript for the update-cupcake.html page
-$(document).ready(async function () {
+// jQuery: Handle updating a cupcake
+$(document).ready(async function() {
   // Get the cupcake ID from the URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const cupcakeId = urlParams.get('id');
+  const urlParams = new URLSearchParams(window.location.search);  // Parse the query parameters
+  const cupcakeId = urlParams.get('id');  // Retrieve the 'id' parameter
 
   if (!cupcakeId) {
     alert('No cupcake ID provided.');
     return;
   }
 
-  // Fetch the cupcake data
-  const cupcake = await cupcakeAPI.fetchAllCupcakes().then(cupcakes =>
-    cupcakes.find(c => c.id == cupcakeId)
-  );
+  // Fetch the cupcake data using the cupcake ID
+  const cupcakes = await cupcakeAPI.fetchAllCupcakes();
+  const cupcake = cupcakes.find(c => c.id == cupcakeId);
 
   if (!cupcake) {
     alert('Cupcake not found.');
@@ -49,7 +30,7 @@ $(document).ready(async function () {
   $('#update-image').val(cupcake.image);
 
   // Handle the form submission to update the cupcake
-  $('#update-cupcake-form').on('submit', async function (evt) {
+  $('#update-cupcake-form').on('submit', async function(evt) {
     evt.preventDefault();
 
     const flavor = $('#update-flavor').val();
@@ -58,9 +39,11 @@ $(document).ready(async function () {
     const image = $('#update-image').val();
 
     // Send the update request
-    await cupcakeAPI.updateCupcake(cupcakeId, { flavor, size, rating, image });
-
-    // Redirect back to the cupcake list after updating
-    window.location.href = '/';
+    try {
+      await cupcakeAPI.updateCupcake(cupcakeId, { flavor, size, rating, image });
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Error updating cupcake:', error);
+    }
   });
 });

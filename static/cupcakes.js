@@ -1,44 +1,7 @@
-class CupcakeAPI {
-  constructor(baseURL) {
-    this.baseURL = baseURL;
-  }
-
-  // Class method to fetch all cupcakes
-  static async fetchAllCupcakes() {
-    const response = await axios.get(`${cupcakeAPI.baseURL}/cupcakes`);  // Use cupcakeAPI.baseURL
-    return response.data.cupcakes;
-  }
-
-  // Class method to create a new cupcake
-  static async createCupcake(data) {
-    const response = await axios.post(`${cupcakeAPI.baseURL}/cupcakes`, data);  // Use cupcakeAPI.baseURL
-    return response.data.cupcake;
-  }
-
-  // Instance method to update a specific cupcake
-  async updateCupcake(id, data) {
-    const response = await axios.patch(`${this.baseURL}/cupcakes/${id}`, data);
-    return response.data.cupcake;
-  }
-
-  // Instance method to delete a specific cupcake
-  async deleteCupcake(id) {
-    const response = await axios.delete(`${this.baseURL}/cupcakes/${id}`);
-    return response.data.message;
-  }
-
-  // Instance method to search for cupcakes by flavor
-  async searchCupcakes(flavor) {
-    const response = await axios.get(`${this.baseURL}/cupcakes?flavor=${flavor}`);
-    return response.data.cupcakes;
-  }
-}
+import { CupcakeAPI } from './api.js'
 
 // Initialize the CupcakeAPI with the correct base URL
 const cupcakeAPI = new CupcakeAPI('/api');
-
-// Rest of the code remains unchanged
-
 
 // Function to generate HTML for each cupcake
 function generateCupcakeHTML(cupcake) {
@@ -56,10 +19,11 @@ function generateCupcakeHTML(cupcake) {
 
 // Function to display all cupcakes on the page
 async function displayAllCupcakes() {
-  const cupcakes = await CupcakeAPI.fetchAllCupcakes();
-  console.log(cupcakes)
+  const cupcakes = await cupcakeAPI.fetchAllCupcakes();  // Use the instance method
+  console.log(cupcakes);
+  $('#cupcake-list').empty();  // Clear the list before appending
   for (let cupcake of cupcakes) {
-      $('#cupcake-list').append(generateCupcakeHTML(cupcake));
+    $('#cupcake-list').append(generateCupcakeHTML(cupcake));
   }
 }
 
@@ -73,8 +37,8 @@ async function handleFormSubmit(evt) {
   const rating = $('#rating').val();
   const image = $('#image').val() || 'https://tinyurl.com/demo-cupcake';
 
-  // Create a new cupcake through the API
-  const newCupcake = await CupcakeAPI.createCupcake({ flavor, size, rating, image });
+  // Create a new cupcake through the API using the instance method
+  const newCupcake = await cupcakeAPI.createCupcake({ flavor, size, rating, image });  // Use the instance method
 
   // Add the new cupcake to the page
   $('#cupcake-list').append(generateCupcakeHTML(newCupcake));
@@ -83,7 +47,7 @@ async function handleFormSubmit(evt) {
   $('#new-cupcake-form').trigger('reset');
 }
 
-function showUpdateForm(cupcake){
+function showUpdateForm(cupcake) {
   return `
     <form class="update-cupcake-form">
       <input type="hidden" name="cupcake-id" value="${cupcake.id}">
@@ -97,7 +61,7 @@ function showUpdateForm(cupcake){
       <input type="text" id="update-image-${cupcake.id}" name="image" value="${cupcake.image}">
       <button type="submit">Submit Update</button>
     </form>
-  `
+  `;
 }
 
 // Function to handle the "Update" button click and display the form
@@ -107,7 +71,7 @@ async function handleUpdateButtonClick(evt) {
   const cupcakeId = $cupcake.data('id');
 
   // Fetch current cupcake details
-  const cupcakes = await cupcakeAPI.fetchAllCupcakes();
+  const cupcakes = await cupcakeAPI.fetchAllCupcakes();  // Use the instance method
   const cupcake = cupcakes.find(c => c.id === cupcakeId);
 
   // Show the update form for the selected cupcake
@@ -123,7 +87,7 @@ async function handleUpdateButtonClick(evt) {
     const image = $(`#update-image-${cupcake.id}`).val();
 
     // Send the update request to the API
-    const updatedCupcake = await cupcakeAPI.updateCupcake(cupcakeId, {
+    const updatedCupcake = await cupcakeAPI.updateCupcake(cupcakeId, {  // Use the instance method
       flavor,
       size,
       rating,
@@ -135,14 +99,13 @@ async function handleUpdateButtonClick(evt) {
   });
 }
 
-
 // Function to handle deleting a cupcake
 async function handleDeleteCupcake(evt) {
   const $cupcake = $(evt.target).closest('li');
   const cupcakeId = $cupcake.data('id');
 
-  // Delete the cupcake using the API
-  const message = await cupcakeAPI.deleteCupcake(cupcakeId);
+  // Delete the cupcake using the instance method
+  const message = await cupcakeAPI.deleteCupcake(cupcakeId);  // Use the instance method
   console.log(message);  // 'Deleted'
 
   // Remove cupcake from the DOM
@@ -159,4 +122,7 @@ $(document).ready(function () {
 
   // Handle deleting a cupcake
   $('#cupcake-list').on('click', '.delete-cupcake', handleDeleteCupcake);
+
+  // Handle updating a cupcake
+  $('#cupcake-list').on('click', '.update-cupcake', handleUpdateButtonClick);
 });
